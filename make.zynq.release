@@ -1,0 +1,3 @@
+#!/bin/bash
+echo exec cp arch/arm/boot/uImage ../RELEASE/SRC/IMAGES
+cp arch/arm/boot/uImage ../RELEASE/SRC/IMAGES
