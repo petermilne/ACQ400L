@@ -1,0 +1,57 @@
+#!/bin/bash
+
+MAKE_RELEASE=${MAKE_RELEASE:-0}
+
+make_dts() {
+	model=$1
+DTS="arch/arm/boot/dts/${model}.dts"
+MODEL=$(echo $model | tr '[:lower:]' '[:upper:]')
+DTB=${DTS%.dts}.dtb
+ACQ=$(dirname $DTS)/ACQ
+echo MODEL: $MODEL
+echo DTS : $DTS
+echo DTB : $DTB
+echo ACQ : $ACQ
+mkdir -p $ACQ
+DC=$(hostname)-$(date +%y%m%d%H%M)
+BNDTS=$(basename $DTS)
+BNDTB=$(basename $DTB)
+DTST=$ACQ/${BNDTS%.dts}-${DC}.dts
+DTBT=$ACQ/${BNDTB%.dtb}-${DC}.dtb
+sed -e "s/\$DATE/$DC/" <$DTS >$DTST
+#echo ./scripts/dtc/dtc -I dts -O dtb -o $DTBT $DTST
+./scripts/dtc/dtc -I dts -O dtb -o $DTBT $DTST
+md5sum $DTBT
+cp $DTBT $(basename $DTB) 
+cp $DTBT $ACQ/$BNDTB
+echo consider checking in $DTS  $ACQ/$BNDTB
+echo to release:
+
+if [ $MAKE_RELEASE -ne 0 ]; then
+#	cp $DTBT ../RELEASE/SRC/MACH/${MODEL}/devicetree.dtb
+#	ls -l ../RELEASE/SRC/MACH/${MODEL}/devicetree.dtb
+	cp $DTBT ../RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb
+	ls -l ../RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb
+else
+	echo MAKE_RELEASE not set, this is what it would have done ..
+#	echo cp $DTBT ../RELEASE/SRC/MACH/${MODEL}/devicetree.dtb
+	echo cp $DTBT ../RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb	
+fi	
+}
+
+if [ "x$1" = "xall" ]; then
+	MAKE_RELEASE=1
+	for m in acq2006 acq1001 acq1002
+	do
+		make_dts $m
+	done	
+elif [ "x$1" != "x" ]; then
+	for m in $* 
+	do
+		make_dts $m
+	done
+else
+	echo usage all \| acq2006 acq1001 acq1002
+fi
+
+
