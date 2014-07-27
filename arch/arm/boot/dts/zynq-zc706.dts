@@ -201,39 +201,6 @@
 					};
 				};
 
-/** PGMWASHERE: we need to access the FMC EEPROMS.
- *  Guessing 1 and 5 (were unused). This is a TOTAL SWAG and is probably WRONG!
- *  i2c@2 above coulda been an FMC site (has eeprom) ?
- */
-				elf1: i2c@6 {
-					#address-cells = <1>;
-					#size-cells = <0>;
-					reg = <0x1>;
-				
-					eeprom@50 {
-						compatible = "at,24c64";
-						reg = <0x50>;
-					};
-					hwmon@28 {
-						compatible="ad,ad7417";
-						reg=<0x28>;
-					};
-				};
-									
-				elf2: i2c@5 {
-					#address-cells = <1>;
-					#size-cells = <0>;
-					reg = <0x5>;
-				
-					eeprom@50 {
-						compatible = "at,24c64";
-						reg = <0x50>;
-					};
-					hwmon@28 {
-						compatible="ad,ad7417";
-						reg=<0x28>;
-					};
-				};
 				i2c@3 {
 					#address-cells = <1>;
 					#size-cells = <0>;
@@ -256,6 +223,36 @@
 					};
 				};
 
+/** PGMWASHERE: we need to access the FMC EEPROMS.  */
+				elf2: i2c@5 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <0x5>;
+				
+					eeprom@50 {
+						compatible = "at,24c64";
+						reg = <0x50>;
+					};
+					hwmon@28 {
+						compatible="ad,ad7417";
+						reg=<0x28>;
+					};
+				};
+
+				elf1: i2c@6 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <0x6>;
+				
+					eeprom@50 {
+						compatible = "at,24c64";
+						reg = <0x50>;
+					};
+					hwmon@28 {
+						compatible="ad,ad7417";
+						reg=<0x28>;
+					};
+				};
 
 				i2c@7 {
 					#address-cells = <1>;
