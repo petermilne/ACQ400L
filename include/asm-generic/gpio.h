@@ -27,7 +27,10 @@
  */
 
 #ifndef ARCH_NR_GPIOS
+/*  D-TACQ : we need MORE!
 #define ARCH_NR_GPIOS		256
+*/
+#define ARCH_NR_GPIOS		512
 #endif
 
 /*
