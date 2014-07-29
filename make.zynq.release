@@ -1,3 +1,8 @@
 #!/bin/bash
-echo exec cp arch/arm/boot/uImage ../RELEASE/SRC/IMAGES
-cp arch/arm/boot/uImage ../RELEASE/SRC/IMAGES
+
+if [ -z $DTOP ]; then
+	echo ERROR DTOP is not defined
+	exit 1
+fi
+echo exec cp arch/arm/boot/uImage $DTOP/RELEASE/SRC/IMAGES
+cp arch/arm/boot/uImage $DTOP/RELEASE/SRC/IMAGES

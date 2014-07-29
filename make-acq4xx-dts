@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z $DTOP ]; then
+	echo ERROR DTOP not defined
+	exit 1
+fi
+
 MAKE_RELEASE=${MAKE_RELEASE:-0}
 
 make_dts() {
@@ -30,12 +35,12 @@ echo to release:
 if [ $MAKE_RELEASE -ne 0 ]; then
 #	cp $DTBT ../RELEASE/SRC/MACH/${MODEL}/devicetree.dtb
 #	ls -l ../RELEASE/SRC/MACH/${MODEL}/devicetree.dtb
-	cp $DTBT ../RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb
-	ls -l ../RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb
+	cp $DTBT $DTOP/RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb
+	ls -l $DTOP/RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb
 else
 	echo MAKE_RELEASE not set, this is what it would have done ..
-#	echo cp $DTBT ../RELEASE/SRC/MACH/${MODEL}/devicetree.dtb
-	echo cp $DTBT ../RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb	
+#	echo cp $DTBT $DTOP/RELEASE/SRC/MACH/${MODEL}/devicetree.dtb
+	echo cp $DTBT $DTOP/RELEASE/SRC/MACH/acq4xx/dtb.d/${model}.dtb	
 fi	
 }
 
