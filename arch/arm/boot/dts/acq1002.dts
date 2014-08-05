@@ -144,11 +144,11 @@
 			compatible = "xlnx,zynq-qspi-1.0";
 			interrupt-parent = <&ps7_scugic_0>;
 			interrupts = <0 19 4>;
-			is-dual = <1>;
+			is-dual = <0>;
 			num-cs = <1>;
 			reg = <0xe000d000 0x1000>;
 			xlnx,fb-clk = <0x1>;
-			xlnx,qspi-mode = <0x2>;
+			xlnx,qspi-mode = <0x0>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			flash@0 {
