@@ -314,11 +314,6 @@
 			clock-names = "ref_clk", "aper_clk";
 			clocks = <&clkc 13>, <&clkc 30>;
 			compatible = "xlnx,ps7-ethernet-1.00.a";
-			/*
-			enet-reset = <&ps7_gpio_0 47 0>;
-			*/
-			/* copy from rev 1 */
-			enet-reset = <0xffffffff>;
 			interrupt-parent = <&ps7_scugic_0>;
 			interrupts = <0 22 4>;
 			
@@ -408,10 +403,18 @@
 					pwm: lp3943@60 {
 						compatible = "ti,lp3943";
 						reg = <0x60>;
-						ti,pwm0 = <1>;	/* LED0=FAN */
-						ti,pwm1 = <0>;  /* OFF */
-						#pwm-cells = <2>;
-					};
+						
+						leds {
+							compatible = "ti,lp3943-gpio";
+							gpio-controller;
+							#gpio-cells = <15>;
+						};						
+						pwm {
+							compatible = "ti,lp3943-pwm";
+							#pwm-cells = <1>;													
+							ti,pwm0 = <0>; /* LED0=FAN */
+						};
+					};					
 				};
 
 				i2c@1 {
