@@ -817,6 +817,10 @@ static int xuartps_startup(struct uart_port *port)
 	xuartps_writel(XUARTPS_IXR_TXEMPTY | XUARTPS_IXR_PARITY |
 		XUARTPS_IXR_FRAMING | XUARTPS_IXR_OVERRUN |
 		XUARTPS_IXR_RXTRIG | XUARTPS_IXR_TOUT, XUARTPS_IER_OFFSET);
+	xuartps_writel(~(XUARTPS_IXR_TXEMPTY | XUARTPS_IXR_PARITY |
+		XUARTPS_IXR_FRAMING | XUARTPS_IXR_OVERRUN |
+		XUARTPS_IXR_RXTRIG | XUARTPS_IXR_TOUT), XUARTPS_IDR_OFFSET);
+
 
 	return retval;
 }
@@ -829,7 +833,7 @@ static int xuartps_startup(struct uart_port *port)
 static void xuartps_shutdown(struct uart_port *port)
 {
 	int status;
-
+#if 0
 	/* Disable interrupts */
 	status = xuartps_readl(XUARTPS_IMR_OFFSET);
 	xuartps_writel(status, XUARTPS_IDR_OFFSET);
@@ -838,6 +842,9 @@ static void xuartps_shutdown(struct uart_port *port)
 	xuartps_writel(XUARTPS_CR_TX_DIS | XUARTPS_CR_RX_DIS,
 				 XUARTPS_CR_OFFSET);
 	free_irq(port->irq, port);
+#else
+	dev_info(port->dev, "PGMWASHERE: no shutdown, thanks");
+#endif
 }
 
 /**
@@ -1229,6 +1236,7 @@ static struct uart_driver xuartps_uart_driver = {
  */
 static int xuartps_suspend(struct device *device)
 {
+#if 0
 	struct uart_port *port = dev_get_drvdata(device);
 	struct tty_struct *tty;
 	struct device *tty_dev;
@@ -1265,7 +1273,9 @@ static int xuartps_suspend(struct device *device)
 		xuartps_writel(XUARTPS_IXR_TOUT, XUARTPS_IDR_OFFSET);
 		spin_unlock_irqrestore(&port->lock, flags);
 	}
-
+#else
+	dev_info(device, "PGMWASHERE: no suspend, thank you\n");
+#endif
 	return 0;
 }
 
@@ -1350,6 +1360,7 @@ static int xuartps_probe(struct platform_device *pdev)
 	struct xuartps *xuartps_data;
 	int id;
 
+	dev_info(&pdev->dev, "PGMWASHERE includes \"no suspend\" hack");
 	xuartps_data = devm_kzalloc(&pdev->dev, sizeof(*xuartps_data),
 			GFP_KERNEL);
 	if (!xuartps_data)
