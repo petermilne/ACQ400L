@@ -1132,6 +1132,7 @@ static void xuartps_console_write(struct console *co, const char *s,
 
 	/* save and disable interrupt */
 	imr = xuartps_readl(XUARTPS_IMR_OFFSET);
+	imr &= ~0x101;
 	xuartps_writel(imr, XUARTPS_IDR_OFFSET);
 
 	/*
@@ -1152,6 +1153,7 @@ static void xuartps_console_write(struct console *co, const char *s,
 	 * written based on the data sheet
 	 */
 	xuartps_writel(~imr, XUARTPS_IDR_OFFSET);
+	imr |= 0x101;
 	xuartps_writel(imr, XUARTPS_IER_OFFSET);
 
 	if (locked)
@@ -1361,7 +1363,7 @@ static int xuartps_probe(struct platform_device *pdev)
 	struct xuartps *xuartps_data;
 	int id;
 
-	dev_info(&pdev->dev, "PGMWASHERE includes \"no suspend\" hack");
+	dev_info(&pdev->dev, "PGMWASHERE includes \"no suspend\" hack polled console setting ..");
 	xuartps_data = devm_kzalloc(&pdev->dev, sizeof(*xuartps_data),
 			GFP_KERNEL);
 	if (!xuartps_data)
