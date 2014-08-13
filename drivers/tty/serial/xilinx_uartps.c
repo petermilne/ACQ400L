@@ -832,8 +832,9 @@ static int xuartps_startup(struct uart_port *port)
  **/
 static void xuartps_shutdown(struct uart_port *port)
 {
-	int status;
 #if 0
+	int status;
+
 	/* Disable interrupts */
 	status = xuartps_readl(XUARTPS_IMR_OFFSET);
 	xuartps_writel(status, XUARTPS_IDR_OFFSET);
