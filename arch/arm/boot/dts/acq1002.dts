@@ -296,8 +296,8 @@
 			interrupt-parent = <&ps7_scugic_0>;
 			interrupts = <0 9 1>;
 			reg = <0xf8005000 0x1000>;
-			reset = <0>;
-			timeout-sec = <10>;
+			reset = <1>;
+			timeout-sec = <20>;
 		} ;
 		ps7_xadc: ps7-xadc@f8007100 {
 			clocks = <&clkc 12>;
