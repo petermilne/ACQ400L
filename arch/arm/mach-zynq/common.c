@@ -117,12 +117,14 @@ static void __init zynq_init_late(void)
  */
 static void __init zynq_init_machine(void)
 {
+#ifdef PGMCOMOUT
 	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-
+#endif
 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-
+#ifdef PGMCOMOUT
 	platform_device_register(&zynq_cpuidle_device);
 	platform_device_register_full(&devinfo);
+#endif
 
 	zynq_slcr_init();
 }
