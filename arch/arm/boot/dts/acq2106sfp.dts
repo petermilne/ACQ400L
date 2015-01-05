@@ -516,7 +516,7 @@
 					};
 					eeprom@50 {
 						compatible = "at,24c64";
-						reg = <0x50>;
+						reg = <0x54>;
 					};
 					clk@5d {
 						compatible = "silabs,si570";
