@@ -533,41 +533,121 @@
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x0>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};							
 						};
 						sfp@1 {
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x1>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};													
 						};
 						sfp@2 {
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x2>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};																				
 						};
 						sfp@3 {
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x3>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};							
 						};
 						sfp@4 {
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x4>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};						
 						};
 						sfp@5 {
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x5>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};							
 						};
 						sfp@6 {
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x6>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};							
 						};
 						sfp@7 {
 							#address-cells = <1>;
 							#size-cells = <0>;
 							reg = <0x7>;
+							eeprom@50 {
+								compatible = "at,spd";								
+								reg = <0x50>;
+								read-only;
+							};
+							ddm@51 {
+								compatible = "at,spd";
+								reg = <0x51>;
+								read-only;
+							};							
 						};						
 					};
 				};
