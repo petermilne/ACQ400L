@@ -225,6 +225,22 @@
 			xlnx,has-power = <0x0>;
 			xlnx,has-wp = <0x1>;
 		} ;
+		
+		ps7_sd_1: ps7-sdio@e0101000 {
+                        clock-frequency = <20000000>;
+                        clock-names = "clk_xin", "clk_ahb";
+                        clocks = <&clkc 22>, <&clkc 33>;
+                        /* compatible = "arasan,sdhci-8.9a"; */
+                        compatible = "dtacq,shim-sdhci-8.9a";
+                        interrupt-parent = <&ps7_scugic_0>;
+                        interrupts = <0 47 4>;
+                        reg = <0xe0101000 0x1000>;
+                        xlnx,has-cd = <0x1>;
+                        xlnx,has-power = <0x0>;
+                        xlnx,has-wp = <0x1>;
+                } ;
+
+		
 		ps7_slcr_0: ps7-slcr@f8000000 {
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -429,7 +445,7 @@
 					};
 					/* RTC: SWAG, there's no driver .. */
 					rtc: rtc@6f {
-						compatible="nxp,mcp7940n";
+						compatible="nxp,mcp7941x";
 						reg=<0x6f>;
 					};					
 				};
