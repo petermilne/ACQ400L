@@ -2,6 +2,7 @@
 # Makefile for MMC/SD host controller drivers
 #
 
+obj-m				+= shim-sdhci-of-arasan.o
 obj-$(CONFIG_MMC_ARMMMCI)	+= mmci.o
 obj-$(CONFIG_MMC_PXA)		+= pxamci.o
 obj-$(CONFIG_MMC_MXC)		+= mxcmmc.o
