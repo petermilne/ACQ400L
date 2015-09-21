@@ -18,6 +18,7 @@
 		ethernet0 = &ps7_ethernet_0;
 		i2c0 = &ps7_i2c_0;
 		serial0 = &ps7_uart_0;
+		serial1 = &ps7_uart_1;
 		spi0 = &ps7_qspi_0;
 	} ;
 	chosen {
@@ -266,6 +267,19 @@
 			reg = <0xf8002000 0x1000>;
 		} ;
 
+		ps7_uart_1: serial@e0000000 {
+			clock-names = "ref_clk", "aper_clk";
+			clocks = <&clkc 23>, <&clkc 40>;
+			compatible = "xlnx,xuartps";
+			current-speed = <115200>;
+			device_type = "serial";
+			interrupt-parent = <&ps7_scugic_0>;
+			interrupts = <0 27 4>;
+			port-number = <0>;
+			reg = <0xe0000000 0x1000>;
+			xlnx,has-modem = <0x0>;
+		} ;
+		
 		ps7_uart_0: serial@e0001000 {
 			clock-names = "ref_clk", "aper_clk";
 			clocks = <&clkc 24>, <&clkc 41>;
