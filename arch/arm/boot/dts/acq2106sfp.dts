@@ -781,7 +781,7 @@
 		};
 		
 		axiDMA_B: axidma@400e0000 {
-			compatible = "D-TACQ,axidma400";
+			compatible = "not-implemented";
 			reg = <0x400e0000 0x10000>;			
 			rx_int = <0x0 0x23 0x0>;
 			tx_int = <0x0 0x21 0x0>;
@@ -789,14 +789,20 @@
 			site = <0xe>;			
 			sn = <1>;
 		};		
-		axiDMA_A: axidma@400f0000 {
-			compatible = "D-TACQ,axidma400";
-			reg = <0x400f0000 0x10000>;
-			rx_int = <0x0 0x36 0x0>;
-			tx_int = <0x0 0x34 0x0>;
-			interrupt-parent = <0x1>;
+		axiDMA_A: axidma@801f0000 {
+    			compatible = "xlnx-acq400,axi-dma";
+    			reg = < 0x801f0000 0x10000 >;		
 			site = <0xf>;
-			sn= <0>;
+			sn=<0>;
+						
+			dma-channel@801f0030 {
+				compatible = "xlnx,axi-dma-s2mm-channel";
+				interrupts = <0x0 0x36 0x0>;
+				interrupt-parent = <&ps7_scugic_0>;
+       				xlnx,datawidth = <0x40>;
+        			xlnx,device-id = <0x0>;
+    				acq400,cyclicsg = <1>;				
+			};			
 		};
 	};
 };
