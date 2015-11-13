@@ -133,6 +133,15 @@ static inline u32 cdns_spi_read(struct cdns_spi *xspi, u32 offset)
 
 static inline void cdns_spi_write(struct cdns_spi *xspi, u32 offset, u32 val)
 {
+	switch(offset){
+	case CDNS_SPI_CR_OFFSET:
+	case CDNS_SPI_ER_OFFSET:
+		dev_dbg(0, "cdns_spi_write: [%02x] tx:%d rx:%d bsy:%d %08x\n",
+			offset,
+			xspi->tx_bytes, xspi->rx_bytes, xspi->dev_busy, val);
+	default:
+		;
+	}
 	writel_relaxed(val, xspi->regs + offset);
 }
 
@@ -171,6 +180,10 @@ static void cdns_spi_init_hw(struct cdns_spi *xspi)
 		       CDNS_SPI_ER_ENABLE_MASK);
 }
 
+
+int (*zynq_spi_cs_hook)(int ch, int cs, int is_high);
+EXPORT_SYMBOL_GPL(zynq_spi_cs_hook);
+
 /**
  * cdns_spi_chipselect - Select or deselect the chip select line
  * @spi:	Pointer to the spi_device structure
@@ -180,9 +193,13 @@ static void cdns_spi_chipselect(struct spi_device *spi, bool is_high)
 {
 	struct cdns_spi *xspi = spi_master_get_devdata(spi->master);
 	u32 ctrl_reg;
+	int cs = spi->chip_select;
 
 	ctrl_reg = cdns_spi_read(xspi, CDNS_SPI_CR_OFFSET);
 
+	if (zynq_spi_cs_hook){
+		cs = zynq_spi_cs_hook(spi->master->bus_num, cs, is_high);
+	}
 	if (is_high) {
 		/* Deselect the slave */
 		ctrl_reg |= CDNS_SPI_CR_SSCTRL_MASK;
@@ -190,11 +207,12 @@ static void cdns_spi_chipselect(struct spi_device *spi, bool is_high)
 		/* Select the slave */
 		ctrl_reg &= ~CDNS_SPI_CR_SSCTRL_MASK;
 		if (!(xspi->is_decoded_cs))
-			ctrl_reg |= ((~(CDNS_SPI_SS0 << spi->chip_select)) <<
+			ctrl_reg |= ((~(CDNS_SPI_SS0 << cs)) <<
 				     CDNS_SPI_SS_SHIFT) &
 				     CDNS_SPI_CR_SSCTRL_MASK;
 		else
-			ctrl_reg |= (spi->chip_select << CDNS_SPI_SS_SHIFT) &
+
+			ctrl_reg |= (cs << CDNS_SPI_SS_SHIFT) &
 				     CDNS_SPI_CR_SSCTRL_MASK;
 	}
 
@@ -276,6 +294,9 @@ static void cdns_spi_config_clock_freq(struct spi_device *spi,
 	}
 	cdns_spi_write(xspi, CDNS_SPI_CR_OFFSET, ctrl_reg);
 }
+
+
+
 
 /**
  * cdns_spi_setup_transfer - Configure SPI controller for specified transfer
