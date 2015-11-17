@@ -510,5 +510,20 @@
 			interrupt-parent = <0x1>;
 			site = <0x2>;
 		};		
-	} ;
-} ;
+		axiDMA_A: axidma@801f0000 {
+    			compatible = "xlnx-acq400,axi-dma";
+    			reg = < 0x801f0000 0x10000 >;		
+			site = <0xf>;
+			sn=<0>;
+						
+			dma-channel@801f0030 {
+				compatible = "xlnx,axi-dma-s2mm-channel";
+				interrupts = <0x0 0x36 0x0>;
+				interrupt-parent = <&ps7_scugic_0>;
+       				xlnx,datawidth = <0x40>;
+        			xlnx,device-id = <0x0>;
+    				acq400,cyclicsg = <1>;				
+			};			
+		};
+	};
+};
