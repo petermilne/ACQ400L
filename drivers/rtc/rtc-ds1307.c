@@ -1022,6 +1022,7 @@ static int ds1307_probe(struct i2c_client *client,
 			irq_handler = mcp794xx_irq;
 			want_irq = true;
 		}
+		set_bit(HAS_ALARM, &ds1307->flags);
 		break;
 	default:
 		break;
