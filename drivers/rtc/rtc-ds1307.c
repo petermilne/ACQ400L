@@ -105,7 +105,7 @@ enum ds_type {
 
 struct ds1307 {
 	u8			offset; /* register's offset */
-	u8			regs[11];
+	u8			regs[0x20];		/* map ALL regs, from 0 */
 	u16			nvram_offset;
 	struct bin_attribute	*nvram;
 	enum ds_type		type;
@@ -361,7 +361,7 @@ static int ds1307_get_time(struct device *dev, struct rtc_time *t)
 		return -EIO;
 	}
 
-	dev_dbg(dev, "%s: %7ph\n", "read", ds1307->regs);
+	dev_dbg(dev, "%s read: %7ph\n", __func__, ds1307->regs);
 
 	t->tm_sec = bcd2bin(ds1307->regs[DS1307_REG_SECS] & 0x7f);
 	t->tm_min = bcd2bin(ds1307->regs[DS1307_REG_MIN] & 0x7f);
@@ -613,6 +613,14 @@ static const struct rtc_class_ops ds13xx_rtc_ops = {
 					 MCP794XX_BIT_ALMX_C1 | \
 					 MCP794XX_BIT_ALMX_C2)
 
+#define MCP794XX_REG_ALARM0_SECS  (MCP794XX_REG_ALARM0_BASE+DS1307_REG_SECS)
+#define MCP794XX_REG_ALARM0_MIN	  (MCP794XX_REG_ALARM0_BASE+DS1307_REG_MIN)
+#define MCP794XX_REG_ALARM0_HOUR  (MCP794XX_REG_ALARM0_BASE+DS1307_REG_HOUR)
+#define MCP794XX_REG_ALARM0_WDAY  (MCP794XX_REG_ALARM0_BASE+DS1307_REG_WDAY)
+#define MCP794XX_REG_ALARM0_MDAY  (MCP794XX_REG_ALARM0_BASE+DS1307_REG_MDAY)
+#define MCP794XX_REG_ALARM0_MONTH (MCP794XX_REG_ALARM0_BASE+DS1307_REG_MONTH)
+#define MCP794XX_REG_ALARM0_YEAR  (MCP794XX_REG_ALARM0_BASE+DS1307_REG_YEAR)
+
 static irqreturn_t mcp794xx_irq(int irq, void *dev_id)
 {
 	struct i2c_client       *client = dev_id;
@@ -661,19 +669,20 @@ static int mcp794xx_read_alarm(struct device *dev, struct rtc_wkalrm *t)
 		return -EINVAL;
 
 	/* Read control and alarm 0 registers. */
-	ret = ds1307->read_block_data(client, MCP794XX_REG_CONTROL, 10, regs);
+	ret = ds1307->read_block_data(client, MCP794XX_REG_CONTROL, 10,
+						regs+MCP794XX_REG_CONTROL);
 	if (ret < 0)
 		return ret;
 
-	t->enabled = !!(regs[0] & MCP794XX_BIT_ALM0_EN);
+	t->enabled = !!(regs[MCP794XX_REG_CONTROL] & MCP794XX_BIT_ALM0_EN);
 
 	/* Report alarm 0 time assuming 24-hour and day-of-month modes. */
-	t->time.tm_sec = bcd2bin(ds1307->regs[3] & 0x7f);
-	t->time.tm_min = bcd2bin(ds1307->regs[4] & 0x7f);
-	t->time.tm_hour = bcd2bin(ds1307->regs[5] & 0x3f);
-	t->time.tm_wday = bcd2bin(ds1307->regs[6] & 0x7) - 1;
-	t->time.tm_mday = bcd2bin(ds1307->regs[7] & 0x3f);
-	t->time.tm_mon = bcd2bin(ds1307->regs[8] & 0x1f) - 1;
+	t->time.tm_sec = bcd2bin(ds1307->regs[MCP794XX_REG_ALARM0_SECS] & 0x7f);
+	t->time.tm_min = bcd2bin(ds1307->regs[MCP794XX_REG_ALARM0_MIN] & 0x7f);
+	t->time.tm_hour = bcd2bin(ds1307->regs[MCP794XX_REG_ALARM0_HOUR] & 0x3f);
+	t->time.tm_wday = bcd2bin(ds1307->regs[MCP794XX_REG_ALARM0_WDAY] & 0x7) - 1;
+	t->time.tm_mday = bcd2bin(ds1307->regs[MCP794XX_REG_ALARM0_MDAY] & 0x3f);
+	t->time.tm_mon = bcd2bin(ds1307->regs[MCP794XX_REG_ALARM0_MONTH] & 0x1f) - 1;
 	t->time.tm_year = -1;
 	t->time.tm_yday = -1;
 	t->time.tm_isdst = -1;
@@ -682,12 +691,13 @@ static int mcp794xx_read_alarm(struct device *dev, struct rtc_wkalrm *t)
 		"enabled=%d polarity=%d irq=%d match=%d\n", __func__,
 		t->time.tm_sec, t->time.tm_min, t->time.tm_hour,
 		t->time.tm_wday, t->time.tm_mday, t->time.tm_mon, t->enabled,
-		!!(ds1307->regs[6] & MCP794XX_BIT_ALMX_POL),
-		!!(ds1307->regs[6] & MCP794XX_BIT_ALMX_IF),
-		(ds1307->regs[6] & MCP794XX_MSK_ALMX_MATCH) >> 4);
+		!!(ds1307->regs[MCP794XX_REG_ALARM0_YEAR] & MCP794XX_BIT_ALMX_POL),
+		!!(ds1307->regs[MCP794XX_REG_ALARM0_YEAR] & MCP794XX_BIT_ALMX_IF),
+		(ds1307->regs[MCP794XX_REG_ALARM0_YEAR] & MCP794XX_MSK_ALMX_MATCH) >> 4);
 
 	return 0;
 }
+
 
 static int mcp794xx_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 {
@@ -706,33 +716,52 @@ static int mcp794xx_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 		t->enabled, t->pending);
 
 	/* Read control and alarm 0 registers. */
-	ret = ds1307->read_block_data(client, MCP794XX_REG_CONTROL, 10, regs);
+	ret = ds1307->read_block_data(client,
+			MCP794XX_REG_CONTROL, 10, regs+MCP794XX_REG_CONTROL);
+
+
 	if (ret < 0)
 		return ret;
 
+	dev_dbg(dev, "%s read from %x %7ph", __func__,
+			MCP794XX_REG_CONTROL, regs+MCP794XX_REG_CONTROL);
+
+
 	/* Set alarm 0, using 24-hour and day-of-month modes. */
-	regs[3] = bin2bcd(t->time.tm_sec);
-	regs[4] = bin2bcd(t->time.tm_min);
-	regs[5] = bin2bcd(t->time.tm_hour);
-	regs[6] = bin2bcd(t->time.tm_wday + 1);
-	regs[7] = bin2bcd(t->time.tm_mday);
-	regs[8] = bin2bcd(t->time.tm_mon + 1);
+	regs[MCP794XX_REG_ALARM0_SECS]  = bin2bcd(t->time.tm_sec);
+	regs[MCP794XX_REG_ALARM0_MIN]   = bin2bcd(t->time.tm_min);
+	regs[MCP794XX_REG_ALARM0_HOUR]  = bin2bcd(t->time.tm_hour);
+	regs[MCP794XX_REG_ALARM0_WDAY]  = bin2bcd(t->time.tm_wday + 1);
+	regs[MCP794XX_REG_ALARM0_MDAY]  = bin2bcd(t->time.tm_mday);
+	regs[MCP794XX_REG_ALARM0_MONTH] = bin2bcd(t->time.tm_mon + 1);
 
 	/* Clear the alarm 0 interrupt flag. */
-	regs[6] &= ~MCP794XX_BIT_ALMX_IF;
+	regs[MCP794XX_REG_ALARM0_YEAR] &= ~MCP794XX_BIT_ALMX_IF;
 	/* Set alarm match: second, minute, hour, day, date, month. */
-	regs[6] |= MCP794XX_MSK_ALMX_MATCH;
-	/* Disable interrupt. We will not enable until completely programmed */
-	regs[0] &= ~MCP794XX_BIT_ALM0_EN;
+	regs[MCP794XX_REG_ALARM0_YEAR] |= MCP794XX_MSK_ALMX_MATCH;
 
-	ret = ds1307->write_block_data(client, MCP794XX_REG_CONTROL, 10, regs);
+	/* Disable interrupt. We will not enable until completely programmed */
+	regs[MCP794XX_REG_CONTROL] &= ~MCP794XX_BIT_ALM0_EN;
+
+
+	dev_dbg(dev, "%s write from %x %7ph", __func__,
+			MCP794XX_REG_CONTROL, regs+MCP794XX_REG_CONTROL);
+
+	ret = ds1307->write_block_data(client,
+			MCP794XX_REG_CONTROL, 10, regs+MCP794XX_REG_CONTROL);
 	if (ret < 0)
 		return ret;
 
 	if (!t->enabled)
 		return 0;
-	regs[0] |= MCP794XX_BIT_ALM0_EN;
-	return i2c_smbus_write_byte_data(client, MCP794XX_REG_CONTROL, regs[0]);
+
+	regs[MCP794XX_REG_CONTROL] |= MCP794XX_BIT_ALM0_EN;
+
+	dev_dbg(dev, "%s write from %x %7ph", __func__,
+			MCP794XX_REG_CONTROL, regs+MCP794XX_REG_CONTROL);
+
+	return i2c_smbus_write_byte_data(client,
+			MCP794XX_REG_CONTROL, regs[MCP794XX_REG_CONTROL]);
 }
 
 static int mcp794xx_alarm_irq_enable(struct device *dev, unsigned int enabled)
@@ -1022,6 +1051,7 @@ static int ds1307_probe(struct i2c_client *client,
 			irq_handler = mcp794xx_irq;
 			want_irq = true;
 		}
+		device_set_wakeup_capable(&client->dev, true);
 		set_bit(HAS_ALARM, &ds1307->flags);
 		break;
 	default:
