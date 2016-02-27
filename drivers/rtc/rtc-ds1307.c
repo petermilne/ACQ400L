@@ -674,6 +674,9 @@ static int mcp794xx_read_alarm(struct device *dev, struct rtc_wkalrm *t)
 	if (ret < 0)
 		return ret;
 
+	dev_dbg(dev, "%s rd from %d (secs:+%d) %9ph", __func__,
+			MCP794XX_REG_CONTROL,  MCP794XX_REG_ALARM0_SECS, regs+MCP794XX_REG_CONTROL);
+
 	t->enabled = !!(regs[MCP794XX_REG_CONTROL] & MCP794XX_BIT_ALM0_EN);
 
 	/* Report alarm 0 time assuming 24-hour and day-of-month modes. */
@@ -698,6 +701,9 @@ static int mcp794xx_read_alarm(struct device *dev, struct rtc_wkalrm *t)
 	return 0;
 }
 
+#ifdef DEBUG_BAD_ALARM_60S
+#include <linux/delay.h>		/* msleep remove me */
+#endif
 
 static int mcp794xx_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 {
@@ -723,8 +729,8 @@ static int mcp794xx_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 	if (ret < 0)
 		return ret;
 
-	dev_dbg(dev, "%s read from %x %7ph", __func__,
-			MCP794XX_REG_CONTROL, regs+MCP794XX_REG_CONTROL);
+	dev_dbg(dev, "%s rd from %d (secs:+%d) %9ph", __func__,
+			MCP794XX_REG_CONTROL,  MCP794XX_REG_ALARM0_SECS, regs+MCP794XX_REG_CONTROL);
 
 
 	/* Set alarm 0, using 24-hour and day-of-month modes. */
@@ -736,16 +742,16 @@ static int mcp794xx_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 	regs[MCP794XX_REG_ALARM0_MONTH] = bin2bcd(t->time.tm_mon + 1);
 
 	/* Clear the alarm 0 interrupt flag. */
-	regs[MCP794XX_REG_ALARM0_YEAR] &= ~MCP794XX_BIT_ALMX_IF;
+	regs[MCP794XX_REG_ALARM0_CTRL] &= ~MCP794XX_BIT_ALMX_IF;
 	/* Set alarm match: second, minute, hour, day, date, month. */
-	regs[MCP794XX_REG_ALARM0_YEAR] |= MCP794XX_MSK_ALMX_MATCH;
+	regs[MCP794XX_REG_ALARM0_CTRL] |= MCP794XX_MSK_ALMX_MATCH;
 
 	/* Disable interrupt. We will not enable until completely programmed */
 	regs[MCP794XX_REG_CONTROL] &= ~MCP794XX_BIT_ALM0_EN;
 
 
-	dev_dbg(dev, "%s write from %x %7ph", __func__,
-			MCP794XX_REG_CONTROL, regs+MCP794XX_REG_CONTROL);
+	dev_dbg(dev, "%s wr from %d (secs:+%d) %9ph", __func__,
+			MCP794XX_REG_CONTROL, MCP794XX_REG_ALARM0_SECS, regs+MCP794XX_REG_CONTROL);
 
 	ret = ds1307->write_block_data(client,
 			MCP794XX_REG_CONTROL, 10, regs+MCP794XX_REG_CONTROL);
@@ -757,11 +763,36 @@ static int mcp794xx_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 
 	regs[MCP794XX_REG_CONTROL] |= MCP794XX_BIT_ALM0_EN;
 
-	dev_dbg(dev, "%s write from %x %7ph", __func__,
-			MCP794XX_REG_CONTROL, regs+MCP794XX_REG_CONTROL);
+	dev_dbg(dev, "%s wr from %d (secs:+%d) %9ph", __func__,
+			MCP794XX_REG_CONTROL, MCP794XX_REG_ALARM0_SECS, regs+MCP794XX_REG_CONTROL);
 
-	return i2c_smbus_write_byte_data(client,
+	ret = i2c_smbus_write_byte_data(client,
 			MCP794XX_REG_CONTROL, regs[MCP794XX_REG_CONTROL]);
+
+#ifdef DEBUG_BAD_ALARM_60S
+	msleep(1000);
+	/* Read control and alarm 0 registers. */
+	ret = ds1307->read_block_data(client,
+			MCP794XX_REG_CONTROL, 10, regs+MCP794XX_REG_CONTROL);
+
+
+	if (ret < 0)
+		return ret;
+
+	dev_dbg(dev, "%s rd from %d (secs:+%d) %9ph", __func__,
+			MCP794XX_REG_CONTROL,  MCP794XX_REG_ALARM0_SECS, regs+MCP794XX_REG_CONTROL);
+	/* Read control and alarm 0 registers. */
+	ret = ds1307->read_block_data(client,
+			MCP794XX_REG_CONTROL, 10, regs+MCP794XX_REG_CONTROL);
+
+
+	if (ret < 0)
+		return ret;
+
+	dev_dbg(dev, "%s rd from %d (secs:+%d) %9ph", __func__,
+			MCP794XX_REG_CONTROL,  MCP794XX_REG_ALARM0_SECS, regs+MCP794XX_REG_CONTROL);
+#endif
+	return ret;
 }
 
 static int mcp794xx_alarm_irq_enable(struct device *dev, unsigned int enabled)
