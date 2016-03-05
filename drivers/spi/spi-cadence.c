@@ -128,22 +128,39 @@ struct cdns_spi {
 /* Macros for the SPI controller read/write */
 static inline u32 cdns_spi_read(struct cdns_spi *xspi, u32 offset)
 {
-	return readl_relaxed(xspi->regs + offset);
+	u32 ret = readl_relaxed(xspi->regs + offset);
+	switch(offset){
+	case CDNS_SPI_RXD_OFFSET:
+		dev_dbg(0, "cdns_spi_read [%02x] %08x", offset, ret);
+		break;
+	}
+
+	return ret;
 }
+
+int zynq_spi_goslow_msec_kludge;
+EXPORT_SYMBOL_GPL(zynq_spi_goslow_msec_kludge);
 
 static inline void cdns_spi_write(struct cdns_spi *xspi, u32 offset, u32 val)
 {
 	switch(offset){
 	case CDNS_SPI_CR_OFFSET:
 	case CDNS_SPI_ER_OFFSET:
+	default:
+		break;
+	case CDNS_SPI_TXD_OFFSET:
+		if (zynq_spi_goslow_msec_kludge){
+			msleep(zynq_spi_goslow_msec_kludge);
+		}
 		dev_dbg(0, "cdns_spi_write: [%02x] tx:%d rx:%d bsy:%d %08x\n",
 			offset,
 			xspi->tx_bytes, xspi->rx_bytes, xspi->dev_busy, val);
-	default:
+
 		;
 	}
 	writel_relaxed(val, xspi->regs + offset);
 }
+
 
 /**
  * cdns_spi_init_hw - Initialize the hardware and configure the SPI controller
@@ -268,6 +285,7 @@ static void cdns_spi_config_clock_mode(struct spi_device *spi)
  * controller the driver will set the highest or lowest frequency supported by
  * controller.
  */
+
 static void cdns_spi_config_clock_freq(struct spi_device *spi,
 				  struct spi_transfer *transfer)
 {
@@ -281,6 +299,7 @@ static void cdns_spi_config_clock_freq(struct spi_device *spi,
 
 	/* Set the clock frequency */
 	if (xspi->speed_hz != transfer->speed_hz) {
+		int new_speed_hz;
 		/* first valid value is 1 */
 		baud_rate_val = CDNS_SPI_BAUD_DIV_MIN;
 		while ((baud_rate_val < CDNS_SPI_BAUD_DIV_MAX) &&
@@ -290,9 +309,13 @@ static void cdns_spi_config_clock_freq(struct spi_device *spi,
 		ctrl_reg &= ~CDNS_SPI_CR_BAUD_DIV_MASK;
 		ctrl_reg |= baud_rate_val << CDNS_SPI_BAUD_DIV_SHIFT;
 
-		xspi->speed_hz = frequency / (2 << baud_rate_val);
+		new_speed_hz = frequency / (2 << baud_rate_val);
+		if (new_speed_hz != xspi->speed_hz){
+			dev_dbg(&spi->dev, "cdns_spi_config_clock_freq() asked:%d got:%d", transfer->speed_hz, xspi->speed_hz);
+			cdns_spi_write(xspi, CDNS_SPI_CR_OFFSET, ctrl_reg);
+			xspi->speed_hz = new_speed_hz;
+		}
 	}
-	cdns_spi_write(xspi, CDNS_SPI_CR_OFFSET, ctrl_reg);
 }
 
 

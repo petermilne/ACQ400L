@@ -64,6 +64,8 @@ irqreturn_t adis16400_trigger_handler(int irq, void *p)
 	u32 old_speed_hz = st->adis.spi->max_speed_hz;
 	int ret;
 
+	dev_dbg(0, "adis16400_trigger_handler buffer %p", adis->buffer);
+
 	if (!adis->buffer)
 		return -ENOMEM;
 

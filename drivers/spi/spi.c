@@ -601,6 +601,13 @@ static int spi_transfer_one_message(struct spi_master *master,
 	list_for_each_entry(xfer, &msg->transfers, transfer_list) {
 		trace_spi_transfer_start(msg, xfer);
 
+		if (xfer->delay_usecs){
+			dev_dbg(&msg->spi->dev,
+				"spi_transfer_one_message() udelay %d",
+				xfer->delay_usecs);
+			udelay(xfer->delay_usecs);
+		}
+
 		reinit_completion(&master->xfer_completion);
 
 		ret = master->transfer_one(master, msg->spi, xfer);
@@ -620,7 +627,7 @@ static int spi_transfer_one_message(struct spi_master *master,
 		}
 
 		if (ms == 0) {
-			dev_err(&msg->spi->dev, "SPI transfer timed out\n");
+			dev_err(&msg->spi->dev, "spi_transfer_one_message() SPI transfer timed out\n");
 			msg->status = -ETIMEDOUT;
 		}
 
@@ -629,8 +636,13 @@ static int spi_transfer_one_message(struct spi_master *master,
 		if (msg->status != -EINPROGRESS)
 			goto out;
 
-		if (xfer->delay_usecs)
+		if (xfer->delay_usecs){
+			dev_dbg(&msg->spi->dev,
+				"spi_transfer_one_message() udelay %d",
+				xfer->delay_usecs);
 			udelay(xfer->delay_usecs);
+		}
+
 
 		if (xfer->cs_change) {
 			if (list_is_last(&xfer->transfer_list,

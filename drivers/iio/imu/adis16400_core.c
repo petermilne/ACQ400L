@@ -310,7 +310,8 @@ static int adis16400_initial_setup(struct iio_dev *indio_dev)
 	if (st->variant->flags & ADIS16400_HAS_SLOW_MODE)
 		st->adis.spi->max_speed_hz = ADIS16400_SPI_SLOW;
 	else
-		st->adis.spi->max_speed_hz = ADIS16400_SPI_FAST;
+		st->adis.spi->max_speed_hz = 1984126;
+//		st->adis.spi->max_speed_hz = ADIS16400_SPI_FAST;
 	st->adis.spi->mode = SPI_MODE_3;
 	spi_setup(st->adis.spi);
 
@@ -846,8 +847,8 @@ static const struct adis_data adis16400_data = {
 	.glob_cmd_reg = ADIS16400_GLOB_CMD,
 	.diag_stat_reg = ADIS16400_DIAG_STAT,
 
-	.read_delay = 50,
-	.write_delay = 50,
+	.read_delay = 50*10,
+	.write_delay = 50*10,
 
 	.self_test_mask = ADIS16400_MSC_CTRL_MEM_TEST,
 	.startup_delay = ADIS16400_STARTUP_DELAY,
@@ -914,6 +915,7 @@ static int adis16400_probe(struct spi_device *spi)
 		goto error_cleanup_buffer;
 
 	adis16400_debugfs_init(indio_dev);
+	adis_enable_irq(&st->adis, 1);
 	return 0;
 
 error_cleanup_buffer:

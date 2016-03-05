@@ -271,14 +271,23 @@ int adis_check_status(struct adis *adis)
 	int ret;
 	int i;
 
+	dev_dbg(&adis->spi->dev, "adis_check_status() 01");
+
 	ret = adis_read_reg_16(adis, adis->data->diag_stat_reg, &status);
+
+
+
 	if (ret < 0)
 		return ret;
 
+	dev_dbg(&adis->spi->dev, "adis_check_status() %08x errmask %08x", status, adis->data->status_error_mask);
 	status &= adis->data->status_error_mask;
+
 
 	if (status == 0)
 		return 0;
+
+	dev_dbg(&adis->spi->dev, "adis_check_status() %08x ", status&adis->data->status_error_mask);
 
 	for (i = 0; i < 16; ++i) {
 		if (status & BIT(i)) {
@@ -314,6 +323,8 @@ static int adis_self_test(struct adis *adis)
 {
 	int ret;
 
+	dev_dbg(0, "adis_self_test() [%02x] = %04x",
+			adis->data->msc_ctrl_reg, adis->data->self_test_mask);
 	ret = adis_write_reg_16(adis, adis->data->msc_ctrl_reg,
 			adis->data->self_test_mask);
 	if (ret) {
@@ -347,8 +358,8 @@ int adis_initial_startup(struct adis *adis)
 		msleep(adis->data->startup_delay);
 		ret = adis_self_test(adis);
 		if (ret) {
-			dev_err(&adis->spi->dev, "Second self-test failed, giving up.\n");
-			return ret;
+			dev_err(&adis->spi->dev, "Second self-test failed, just go with it.\n");
+			return 0;
 		}
 	}
 
