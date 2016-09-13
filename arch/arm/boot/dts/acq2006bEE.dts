@@ -354,7 +354,6 @@
 			phy-mode = "rgmii-id";
 			reg = <0xe000c000 0x1000>;
 			xlnx,eth-mode = <0x1>;
-			xlnx,has-mdio = <0x1>;
 			xlnx,ptp-enet-clock = <111111115>;
 		};
 		ps7_gpio_0: ps7-gpio@e000a000 {
