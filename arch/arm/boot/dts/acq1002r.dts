@@ -141,7 +141,7 @@
 			reg = <0xf8f02000 0x1000>;
 		} ;
 		
-/* spi: for ACQ480, PIG-CELF.  */
+/* spi: for ACQ480, PIG-CELF, RADCELF.  */
 		ps7_spi_0: ps7_spi@e0006000 {
      			compatible = "cdns,spi-r1p6";
      			clock-names = "ref_clk", "pclk";
@@ -483,7 +483,7 @@
 														
 					hwmon@29 {
 						compatible="ad,ad7417";
-						reg=<0x28>;
+						reg=<0x29>;
 					};					
 					leds2: gpio@20 {
 						compatible="nxp,tca6408";
