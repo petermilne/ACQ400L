@@ -27,7 +27,7 @@
 		linux,stdout-path = "/amba@0/serial@e0001000";
 		build="$DATE";	
 		descr="device tree for ACQ1002, TWO SITES";
-		notes="i2c mux back at correct address 0x74 hack for 314";
+		notes="instantiate i2c 1";
 		model="acq1002";
 		compatible_model="acq100?";		
 	};
@@ -493,6 +493,19 @@
 			};
 
 		} ;
+		
+		ps7_i2c_1: ps7-i2c@e0005000 {
+			clock-frequency = <400000>;
+			clocks = <&clkc 38>;
+			compatible = "cdns,i2c-r1p10";
+			i2c-reset = <&ps7_gpio_0 46 0>;
+			interrupt-parent = <&ps7_scugic_0>;
+			interrupts = <0 48 4>;
+			reg = <0xe0005000 0x1000>;
+			xlnx,has-interrupt = <0x0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 				
 		sitec: acq2006sc@40000000 {
 			reg = <0x40000000 0x10000>;
