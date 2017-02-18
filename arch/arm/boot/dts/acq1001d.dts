@@ -468,10 +468,10 @@
     			dma-channel@801e0030 {
         			compatible = "xlnx,axi-dma-s2mm-channel";
         			/* WARNING: check interrupt number */
-        			interrupts = < 0 56 4 >;
+        			interrupts = < 0 35 4 >;
         			interrupt-parent = <&ps7_scugic_0>;
         			xlnx,datawidth = <0x40>;
-        			xlnx,device-id = <0x0>;
+        			xlnx,device-id = <0x1>;
     				acq400,cyclicsg = <1>;
     			};
 		};		
